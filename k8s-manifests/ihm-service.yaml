@@ -8,9 +8,9 @@ metadata:
     io.kompose.service: ihm
   name: ihm
 spec:
+  type: LoadBalancer
   ports:
-    - name: "3000"
-      port: 3000
+    - port: 3000
       targetPort: 3000
   selector:
     io.kompose.service: ihm
