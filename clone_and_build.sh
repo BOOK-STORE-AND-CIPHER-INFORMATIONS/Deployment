@@ -35,7 +35,7 @@ cd ..
 echo "Building IHM image..."
 cd IHM
 git switch fra_ihm  # TODO : Remove and put working code in main
-if docker build -f Dockerfile.dev -t ihm .; then
+if docker build -f Dockerfile -t ihm .; then
     echo "✓ IHM image built successfully"
 else
     echo "✗ IHM cache image"

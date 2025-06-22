@@ -37,7 +37,7 @@ services:
     environment:
       - 'NEXT_PUBLIC_API_PUBLIC_URL=http://localhost:8080'
       - 'HOSTNAME=0.0.0.0'
-      - 'API_INTERNAL_URL=http://api'
+      - 'API_INTERNAL_URL=http://server:80'
     ports:
       - '3000:3000'
     networks:
