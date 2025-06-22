@@ -23,7 +23,7 @@ spec:
       containers:
         - env:
             - name: API_INTERNAL_URL
-              value: http://api
+              value: http://server:8080
             - name: HOSTNAME
               value: 0.0.0.0
             - name: NEXT_PUBLIC_API_PUBLIC_URL

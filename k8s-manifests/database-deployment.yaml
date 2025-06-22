@@ -1,52 +1,55 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f compose.yml -o k8s-manifests/
-    kompose.version: 1.36.0 (ae2a39403)
-  labels:
-    io.kompose.service: database
   name: database
 spec:
-  replicas: 1
+  serviceName: "postgres"
+  replicas: 2
   selector:
     matchLabels:
-      io.kompose.service: database
-  strategy:
-    type: Recreate
+      app: postgres
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f compose.yml -o k8s-manifests/
-        kompose.version: 1.36.0 (ae2a39403)
       labels:
-        io.kompose.service: database
+        app: postgres
     spec:
       containers:
-        - env:
-            - name: POSTGRES_DB
-              value: app
-            - name: POSTGRES_PASSWORD
-              value: admin
-            - name: POSTGRES_USER
-              value: admin
-          image: postgres:16-alpine
-          livenessProbe:
-            exec:
-              command: ["pg_isready", "-d", "app", "-U", "admin"]
-            failureThreshold: 10
-            initialDelaySeconds: 2
-            periodSeconds: 10
-            timeoutSeconds: 15
-          name: database
-          ports:
-            - containerPort: 5432
-              protocol: TCP
-          volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: database-data
-      restartPolicy: Always
-      volumes:
-        - name: database-data
-          persistentVolumeClaim:
-            claimName: database-data
+      - name: postgres
+        image: bitnami/postgresql:16
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            if [[ "$(hostname)" == *-0 ]]; then
+              export POSTGRESQL_REPLICATION_MODE=master;
+            else
+              export POSTGRESQL_REPLICATION_MODE=slave;
+              export POSTGRESQL_MASTER_HOST=database-0.postgres;
+            fi;
+            /opt/bitnami/scripts/postgresql/entrypoint.sh /opt/bitnami/scripts/postgresql/run.sh
+        env:
+          - name: POSTGRESQL_POSTGRES_PASSWORD
+            value: admin
+          - name: POSTGRESQL_USERNAME
+            value: admin
+          - name: POSTGRESQL_PASSWORD
+            value: admin
+          - name: POSTGRESQL_DATABASE
+            value: app
+          - name: POSTGRESQL_REPLICATION_USER
+            value: repl_user
+          - name: POSTGRESQL_REPLICATION_PASSWORD
+            value: repl_password
+        ports:
+          - containerPort: 5432
+            name: postgres
+        volumeMounts:
+          - name: data
+            mountPath: /bitnami/postgresql
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 100Mi
