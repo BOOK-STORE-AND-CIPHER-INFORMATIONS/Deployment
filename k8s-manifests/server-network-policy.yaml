@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: server-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      io.kompose.service: server
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            io.kompose.service: ihm
+      - podSelector:
+          matchLabels:
+            io.kompose.service: client
+      - podSelector:
+          matchLabels:
+            io.kompose.service: database
+    - ports:
+      - protocol: TCP
+        port: 80
