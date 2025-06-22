@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f compose.yml -o k8s-manifests/
+    kompose.version: 1.36.0 (ae2a39403)
+  labels:
+    io.kompose.service: ihm
+  name: ihm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ihm
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f compose.yml -o k8s-manifests/
+        kompose.version: 1.36.0 (ae2a39403)
+      labels:
+        io.kompose.service: ihm
+    spec:
+      containers:
+        - env:
+            - name: API_INTERNAL_URL
+              value: http://api
+            - name: HOSTNAME
+              value: 0.0.0.0
+            - name: NEXT_PUBLIC_API_PUBLIC_URL
+              value: http://localhost:8080
+          image: ihm
+          imagePullPolicy: Never
+          name: ihm
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+      restartPolicy: Always
