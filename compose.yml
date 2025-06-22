@@ -1,0 +1,57 @@
+services:
+  server:
+    restart: always
+    image: api
+    environment:
+      SERVER_NAME: :80
+      DATABASE_URL: postgresql://${POSTGRES_DB_USER}:${POSTGRES_DB_PASSWORD}@${POSTGRES_DB_HOST}:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}
+      TRUSTED_HOSTS: ^${SERVER_NAME:-example\.com|localhost}|php$$
+      PUBLIC_URL: http://localhost:8080
+      PHP_CS_FIXER_IGNORE_ENV: 1 # PHP-CS-FIXER NOT COMPATIBLE WITH PHP 8.4
+    ports:
+      - "8080:80" # HTTP
+    networks:
+      - internal
+
+  database:
+    image: postgres:${POSTGRES_TAG}
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB_NAME}
+      - POSTGRES_USER=${POSTGRES_DB_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d ${POSTGRES_DB_NAME} -U ${POSTGRES_DB_USER}"]
+      start_period: 2s
+      interval: 10s
+      timeout: 15s
+      retries: 10
+    ports:
+      - "5432:5432"
+    volumes:
+      - database_data:/var/lib/postgresql/data:rw
+    networks:
+      - internal
+  
+  ihm:
+    image: ihm
+    environment:
+      - 'NEXT_PUBLIC_API_PUBLIC_URL=http://localhost:8080'
+      - 'HOSTNAME=0.0.0.0'
+      - 'API_INTERNAL_URL=http://api'
+    ports:
+      - '3000:3000'
+    networks:
+      - internal
+  
+  client:
+    image: client
+    environment:
+      - N_RUNS=20
+    networks:
+      - internal
+
+networks:
+  internal:
+
+volumes:
+  database_data:
