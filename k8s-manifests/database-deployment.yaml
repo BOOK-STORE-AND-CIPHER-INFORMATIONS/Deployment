@@ -28,17 +28,30 @@ spec:
             /opt/bitnami/scripts/postgresql/entrypoint.sh /opt/bitnami/scripts/postgresql/run.sh
         env:
           - name: POSTGRESQL_POSTGRES_PASSWORD
-            value: admin
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: POSTGRESQL_POSTGRES_PASSWORD
           - name: POSTGRESQL_USERNAME
-            value: admin
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: POSTGRESQL_USERNAME
           - name: POSTGRESQL_PASSWORD
-            value: admin
-          - name: POSTGRESQL_DATABASE
-            value: app
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: POSTGRESQL_PASSWORD
           - name: POSTGRESQL_REPLICATION_USER
-            value: repl_user
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: POSTGRESQL_REPLICATION_USER
           - name: POSTGRESQL_REPLICATION_PASSWORD
-            value: repl_password
+            valueFrom:
+              secretKeyRef:
+                name: database-secret
+                key: POSTGRESQL_REPLICATION_PASSWORD
         ports:
           - containerPort: 5432
             name: postgres

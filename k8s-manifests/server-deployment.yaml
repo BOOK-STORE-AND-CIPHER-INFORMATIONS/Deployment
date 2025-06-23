@@ -23,7 +23,10 @@ spec:
       containers:
         - env:
             - name: DATABASE_URL
-              value: postgresql://admin:admin@database:5432/app
+              valueFrom:
+                secretKeyRef:
+                  name: database-secret
+                  key: DATABASE_URL
             - name: PHP_CS_FIXER_IGNORE_ENV
               value: "1"
             - name: PUBLIC_URL
